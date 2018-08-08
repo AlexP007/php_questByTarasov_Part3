@@ -52,14 +52,26 @@ $formArray = [
     "value",
     "label"
 ];
+//фильтрация массива для POST
+$elementsPost = inputFormV2($elements);
 // переменные POST
 // принимает значение имени
-$firstName = isset($_POST[$elements[0]["name"]]) ? $_POST[$elements[0]["name"]] : "";
+$firstName = isset($_POST[$elementsPost[3]["name"]]) ? $_POST[$elementsPost[3]["name"]] : "";
 // принимает знаыение возраста
-$age = isset($_POST[$elements[1]["name"]]) ? $_POST[$elements[1]["name"]] : "";
+$age = isset($_POST[$elementsPost[2]["name"]]) ? $_POST[$elementsPost[2]["name"]] : "";
 // принимает значение пола, можно обойтись одной перемнной.
-$genderM = isset($_POST[$elements[2]["name"]]) ? $_POST[$elements[2]["name"]] : "";
-//$genderF = isset($_POST[$elements[2]["name"]]) ? $_POST[$elements[2]["name"]] : "";
+$genderM = isset($_POST[$elementsPost[1]["name"]]) ? $_POST[$elementsPost[1]["name"]] : "";
+//$genderF = isset($_POST[$elementsPost[2]["name"]]) ? $_POST[$elementsPost[2]["name"]] : "";
+
+// функция фильтрации по "type"
+function inputFormV2($array) {
+    usort($array, function($a,$b){
+        if(array_key_exists('type',$a) && array_key_exists('type',$b) )
+            return $a['type']<$b['type'] ? -1:1;
+    });
+    return $array;
+}
+
 /*
  * Функция принимает заданный массив с элементами формы, сравнивает его с
  * имеющимся массивом значениий, определяет переменные и выводит форму. Так же функция
@@ -67,10 +79,12 @@ $genderM = isset($_POST[$elements[2]["name"]]) ? $_POST[$elements[2]["name"]] : 
  */
 
 function inputForm(array $array, array $comparisonArray, $firstName,$age,$genderM) {
+    // отфильтровали по типу
+    $array = inputFormV2($array);
     // первый уровень вложенности
     foreach ($array as $innerValue) {
         // обнуление элементов
-        $element = $htmltype = $formName = $type = $placeholder = $formValue = $label = $labalId = $checkedM =  "";
+        $element = $htmltype = $formName = $type = $placeholder = $formValue = $label = $labalId = $checkedM  = $firstNameF = $ageF = "";
         // второй уровень вложенности. Фильтруем данные и создаем переменные
         foreach ($innerValue as $key => $value) {
             global $element, $htmltype, $formName, $type, $placeholder, $formValue, $label;
@@ -90,14 +104,14 @@ function inputForm(array $array, array $comparisonArray, $firstName,$age,$gender
                 $label = $value ;
         }
         // условия, чтобы для каждого элемента значения переопределялись заново
-        if($firstName && $formName == $array[0]["name"])
-            $firstName = "value ='$firstName'";
-        if($age && $formName == $array[1]["name"])
-            $firstName = "value ='$age'";
         if($genderM  == $formValue)
             $checkedM = "checked";
 //        if($genderF == $formValue)
 //            $checkedF = "checked";
+        if($age && $formName == $array[2]["name"])
+            $ageF = "value ='$age'";
+        if($firstName && $formName == $array[3]["name"])
+            $firstNameF = "value ='$firstName'";
         if($htmltype)
             $htmltype = "type='$htmltype'";
         if($formName)
@@ -113,14 +127,13 @@ function inputForm(array $array, array $comparisonArray, $firstName,$age,$gender
         // вывод, можно переделать в return
         echo <<<STATEMENT
  <div class="form-group">
- <input $htmltype  $formName $formValue $placeholder id = "$labalId" $firstName $checkedM>
+ <input $htmltype  $formName $formValue $placeholder id = "$labalId" $firstNameF $ageF $checkedM>
  $label
 </div>
 STATEMENT;
-        $firstName = "";
     }
+    
 }
-
 ?>
 <!doctype html>
 <html lang="en">
@@ -150,6 +163,8 @@ STATEMENT;
         <?php
         inputForm($elements, $formArray,$firstName,$age,$genderM);
         ?>
+
+ 
     </form>
 </body>
 </html>
