@@ -57,8 +57,20 @@ $elementsPost = inputFormV2($elements);
 // переменные POST
 // принимает значение имени
 $firstName = isset($_POST[$elementsPost[3]["name"]]) ? $_POST[$elementsPost[3]["name"]] : "";
-// принимает знаыение возраста
-$age = isset($_POST[$elementsPost[2]["name"]]) ? $_POST[$elementsPost[2]["name"]] : "";
+// принимает значение возраста и проверяет на целое число
+$notice = "";
+if (isset($_POST[$elementsPost[2]["name"]])) {
+    $age = $_POST[$elementsPost[2]["name"]];
+    if (!is_numeric($age)) {
+        $age = $_POST[$elementsPost[2]["name"]];
+        $notice = "Введите ЦЕЛОЕ число в поле возраст";
+    }
+}
+else {
+    $age = "";
+
+}
+
 // принимает значение пола, можно обойтись одной перемнной.
 $genderM = isset($_POST[$elementsPost[1]["name"]]) ? $_POST[$elementsPost[1]["name"]] : "";
 //$genderF = isset($_POST[$elementsPost[2]["name"]]) ? $_POST[$elementsPost[2]["name"]] : "";
@@ -80,6 +92,7 @@ function inputFormV2($array) {
 
 function inputForm(array $array, array $comparisonArray, $firstName,$age,$genderM) {
     // отфильтровали по типу
+    $statement = "";
     $array = inputFormV2($array);
     // первый уровень вложенности
     foreach ($array as $innerValue) {
@@ -125,14 +138,10 @@ function inputForm(array $array, array $comparisonArray, $firstName,$age,$gender
             $label = " <label for=\"$label\">$label</label>";
         }
         // вывод, можно переделать в return
-        echo <<<STATEMENT
- <div class="form-group">
- <input $htmltype  $formName $formValue $placeholder id = "$labalId" $firstNameF $ageF $checkedM>
- $label
-</div>
-STATEMENT;
+        $statement  .= "<div class=\"form-group\"> <input $htmltype  $formName $formValue $placeholder
+        id = \"$labalId\" $firstNameF $ageF $checkedM> $label </div> ";
     }
-    
+        return $statement;
 }
 ?>
 <!doctype html>
@@ -155,16 +164,19 @@ STATEMENT;
         form {
             margin: 40px 0;
         }
+        section {
+            color: red;
+        }
 
     </style>
 </head>
 <body>
     <form action="#" method="POST">
         <?php
-        inputForm($elements, $formArray,$firstName,$age,$genderM);
+        echo inputForm($elements, $formArray,$firstName,$age,$genderM);
         ?>
-
- 
+        <section><?=$notice; ?></section>
+      
     </form>
 </body>
 </html>
